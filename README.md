@@ -66,7 +66,7 @@ class ViewController: UIViewController, SmartShoppingEventsDelegate {
 
 4. Interact with the `SmartShopping` engine
 
-The instance of the SmartShopping class contains the `engine` field, which is an instance of the `SmartShoppingEngine` class. The engine object provides the following methods for manipulating the SDK engine:
+The instance of the SmartShopping class contains the `engine` field, which is an instance of the `Engine` class. The engine object provides the following methods for manipulating the SDK engine:
 
 1. Inspect the checkout page: To analyze the checkout page and collect information about the products, shipping details, and discounts, you can call the inspect method on the engine instance.
 

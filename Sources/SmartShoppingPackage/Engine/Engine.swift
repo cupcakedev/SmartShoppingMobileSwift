@@ -20,10 +20,9 @@ public protocol EngineDelegate {
     func didReceiveCheckout(value: Bool, engineState: EngineState)
 }
 
-public class SmartShoppingEngine {
+public class Engine {
     let clientID: String
     let key: String
-    let serverUrl: String
     let promoCodes: [String]
     let storage = Storage()
     var delegate: EngineDelegate?
@@ -31,10 +30,9 @@ public class SmartShoppingEngine {
     let evaluateJavaScript:  (_ js: String) async -> Void
     
     
-    init(clientID: String, key: String, serverUrl: String, promoCodes: [String], sendMessage: @escaping (Codable) -> Void, evaluateJavaScript: @escaping (String) -> Void) {
+    init(clientID: String, key: String, promoCodes: [String], sendMessage: @escaping (Codable) -> Void, evaluateJavaScript: @escaping (String) async -> Void) {
         self.clientID = clientID
         self.key = key
-        self.serverUrl = serverUrl
         self.promoCodes = promoCodes
         self.sendMessage = sendMessage
         self.evaluateJavaScript = evaluateJavaScript
@@ -69,26 +67,28 @@ public class SmartShoppingEngine {
     
     public func initEngine() async {
         let js = """
-              const smartShoppingEngine = new SmartShopping.Engine();
-              console.log("smartShoppingEngine", smartShoppingEngine)
-              function sendMessageToNative(event, message) {
-                  console.log("sendMessageToNative", event);
-                  console.log(message);
-                  window.webkit.messageHandlers["\(Constants.messageBridgeKey)"].postMessage(JSON.stringify({event, message}));
-               
-              };
+              if (window && !window.smartShoppingEngine) {
+                  window.smartShoppingEngine = new SmartShopping.Engine();
+                  console.log("smartShoppingEngine", smartShoppingEngine)
+                  window.sendMessageToNative = function sendMessageToNative(event, message) {
+                      console.log("sendMessageToNative", event);
+                      console.log(message);
+                      window.webkit.messageHandlers["\(Constants.messageBridgeKey)"].postMessage(JSON.stringify({event, message}));
+                   
+                  };
         
-              const unbinders = smartShoppingEngine.subscribe({
-                config: (value) => sendMessageToNative("config", value),
-                checkoutState: (value) => sendMessageToNative("checkoutState",value),
-                finalCost: (value) => sendMessageToNative("finalCost",value),
-                promocodes: (value) => sendMessageToNative("promocodes",value),
-                progress: (value, state) => sendMessageToNative("progress", {value, state}),
-                currentCode: (value) => sendMessageToNative("currentCode", value),
-                bestCode: (value) => sendMessageToNative("bestCode", value),
-                detectState: (value) => sendMessageToNative("detectState", value),
-                checkout: (value, state) => sendMessageToNative("checkout", {value, state})
-              });
+                  smartShoppingEngine.subscribe({
+                    config: (value) => sendMessageToNative("config", value),
+                    checkoutState: (value) => sendMessageToNative("checkoutState",value),
+                    finalCost: (value) => sendMessageToNative("finalCost",value),
+                    promocodes: (value) => sendMessageToNative("promocodes",value),
+                    progress: (value, state) => sendMessageToNative("progress", {value, state}),
+                    currentCode: (value) => sendMessageToNative("currentCode", value),
+                    bestCode: (value) => sendMessageToNative("bestCode", value),
+                    detectState: (value) => sendMessageToNative("detectState", value),
+                    checkout: (value, state) => sendMessageToNative("checkout", {value, state})
+                  });
+             }
         """
         await evaluateJavaScript(js)
     }
@@ -134,12 +134,12 @@ public class SmartShoppingEngine {
     }
     
     public func apply() async {
-        let js = "smartShoppingEngine.apply()"
+        let js = "return await smartShoppingEngine.apply()"
         await evaluateJavaScript(js)
     }
     
     public func applyBest() async {
-        let js = "smartShoppingEngine.applyBest()"
+        let js = "return await smartShoppingEngine.applyBest()"
         await evaluateJavaScript(js)
     }
 }

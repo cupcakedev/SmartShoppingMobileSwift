@@ -8,7 +8,7 @@
 import Foundation
 import CryptoKit
 
-extension SmartShoppingEngine {
+extension Engine {
     func decrypt(message: String) -> String {
         let AES = CryptoJS.AES()
         let decrypted = AES.decrypt(message, password: key)

@@ -7,10 +7,10 @@
 
 import Foundation
 
-extension SmartShoppingEngine {
+extension Engine {
     func requireShops() async -> [Merchant] {
         do {
-            let url = "\(serverUrl)/shop/urls?clientID=\(clientID)"
+            let url = "\(Constants.serverUrl)/shop/urls?clientID=\(clientID)"
             let (data, _) = try await self.fetch(url: url)
             let decodedData = try JSONDecoder().decode([Merchant].self, from:data)
             return decodedData
@@ -21,7 +21,7 @@ extension SmartShoppingEngine {
     
     func requireDefaultConfig() async -> [EngineConfig] {
         do {
-            let url = "\(serverUrl)/shop/defaultConfigs?clientID=\(clientID)"
+            let url = "\(Constants.serverUrl)/shop/defaultConfigs?clientID=\(clientID)"
             let (data, _) = try await self.fetch(url: url)
             let str = String(decoding: data, as: UTF8.self)
             let decodedData = try JSONDecoder().decode([EngineConfig].self, from:data)
@@ -33,7 +33,7 @@ extension SmartShoppingEngine {
     
     func requireShopConfig(shopId: String) async -> EngineConfig {
         do {
-            let url = "\(serverUrl)/shop/\(shopId)?clientID=\(clientID)"
+            let url = "\(Constants.serverUrl)/shop/\(shopId)?clientID=\(clientID)"
             let (data, _) = try await self.fetch(url: url)
             let str = String(decoding: data, as: UTF8.self)
             print(str)

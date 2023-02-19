@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension SmartShoppingEngine {
+extension Engine {
     func prepareDefaultSelectors() {
         var newObjects: [String: [Selector]] = [:]
         storage.defaultConfigs.forEach { config in

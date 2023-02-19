@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension SmartShoppingEngine {
+extension Engine {
     
     public func urlChangeHandler(nUrl: String) {
         print(nUrl);
@@ -52,6 +52,7 @@ extension SmartShoppingEngine {
     }
     
     func clearPersistState() {
+        storage.persisted = nil
         print("clearPersistState")
     }
     

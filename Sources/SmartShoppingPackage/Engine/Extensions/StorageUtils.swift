@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension SmartShoppingEngine {
+extension Engine {
     func locateShop(url: String) -> Merchant? {
         let locatedShop = self.storage.shops.first(where: { (merchant: Merchant) -> Bool in
             return url.range(of: merchant.shopUrl, options: .regularExpression, range: nil, locale: nil) != nil
