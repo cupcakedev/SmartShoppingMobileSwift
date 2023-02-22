@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  SmartShopping.swift
 //  SmartShoppingModule
 //
 //  Created by Lenad on 30.01.2023.
@@ -10,12 +10,10 @@ import SwiftUI
 import WebKit
 import UIKit
 
-public protocol SmartShoppingEventsDelegate: EngineDelegate {
-    func didChangeURL(nUrl: String) -> Void
-}
-
-public class SmartShopping: UIViewController, WKNavigationDelegate, WKUIDelegate, EngineDelegate {
-    var delegate: SmartShoppingEventsDelegate?
+/**
+ A class that provides a view controller for the SmartShopping module.
+ */
+public class SmartShopping: UIViewController {
     var url = ""
     
     var webView: WKWebView?
@@ -31,126 +29,66 @@ public class SmartShopping: UIViewController, WKNavigationDelegate, WKUIDelegate
     
     var messageListeners: [(_ nMessage: Message) -> Void] = []
     
-//    var webViewURLObserver: NSKeyValueObservation?
-    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    /**
+     Initializes the SmartShopping module.
+     
+     - Parameters:
+     - clientID: The client ID.
+     - key: The key.
+     */
     public init(clientID: String, key: String) {
         self.clientID = clientID
         self.key = key
-        self.delegate = nil
         super.init(nibName: nil, bundle: nil)
-        // ??
-        engine.delegate = self
         addMessageSentListener(engine.messageHandler)
-        //
         Task {
             await engine.install()
         }
     }
     
-    public convenience init(clientID: String, key: String,webView: WKWebView, delegate: SmartShoppingEventsDelegate) {
+    /**
+     Initializes the SmartShopping module.
+     
+     - Parameters:
+     - clientID: The client ID.
+     - key: The key.
+     - webView: The web view to install the module in.
+     - delegate: The delegate to handle events related to the module.
+     */
+    public convenience init(clientID: String, key: String, webView: WKWebView, delegate: SmartShoppingEventsDelegate) {
         self.init(clientID: clientID, key: key)
-        self.delegate = delegate
+        engine.delegate = delegate
     }
     
+    /**
+     Sets the controller and sets the delegate for SmartShoppingEventsDelegate. Important: This method must be called once after class initialization to establish the necessary connections with the web view and set the delegate.
+     
+     - Parameters:
+     - webView: The web view to install the module in.
+     - delegate: The delegate to handle events related to the module.
+     */
     public func install(webView: WKWebView, delegate: SmartShoppingEventsDelegate) {
         webView.configuration.userContentController.add(self, name: Constants.messageBridgeKey)
         self.webView = webView
-        
-        self.delegate = delegate
+        engine.delegate = delegate
     }
     
-//    public func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
-//        webView.loadJS()
-//        Task {
-//            await engine.initEngine();
-//        }
-//    }
-    
-    //    func urlDidChange(_ urlString: String) {
-    //        url = urlString.clean()
-    //        print("******** urlDidChange *******")
-    //        //        delegate?.didChangeURL(nUrl: urlString)
-    //    }
-    
+    /**
+     This method starts the SmartShopping engine by loading the appropriate configuration and initializing the SmartShopping flow. It first loads the SmartShopping code into the webview, and then starts the engine with the provided URL and promo codes. Note: that  method should only be called after the install method has been called and a valid webview is set.
+     
+     - Parameters:
+     - url: The URL to start the engine with.
+     - codes: An array of promo codes.
+     */
     public func startEngine(url: String, codes: [String]) async {
         if let webView = self.webView {
             webView.loadJS()
             await engine.initEngine();
             await engine.startEngine(url: url, codes: codes)
-        }
-    }
-    
-    public func didReceiveCheckoutState(checkoutState: EngineCheckoutState) {
-        delegate?.didReceiveCheckoutState(checkoutState: checkoutState)
-    }
-    
-    public func didReceiveConfig(engineConfig: EngineConfig) {
-        delegate?.didReceiveConfig(engineConfig: engineConfig)
-    }
-    
-    public func didReceiveFinalCost(finalCost: EngineFinalCost) {
-        delegate?.didReceiveFinalCost(finalCost: finalCost)
-    }
-    
-    public func didReceivePromocodes(promoCodes: PromoCodes) {
-        delegate?.didReceivePromocodes(promoCodes: promoCodes)
-    }
-    
-    public func didReceiveProgress(value: ProgressStatus, progress: EngineState) {
-        delegate?.didReceiveProgress(value: value, progress: progress)
-    }
-    
-    public func didReceiveCurrentCode(currentCode: CurrentCode) {
-        delegate?.didReceiveCurrentCode(currentCode: currentCode)
-    }
-    
-    public func didReceiveBestCode(bestCode: BestCode) {
-        delegate?.didReceiveBestCode(bestCode: bestCode)
-    }
-    
-    public func didReceiveDetectState(detectState: EngineDetectState) {
-        delegate?.didReceiveDetectState(detectState: detectState)
-    }
-    
-    public func didReceiveCheckout(value: Bool, engineState: EngineState) {
-        delegate?.didReceiveCheckout(value: value, engineState: engineState)
-    }
-    
-    func executeAsyncJavaScript(_ js: String) async {
-        return await withCheckedContinuation { continuation in
-            if let webView = self.webView {
-                if #available(iOS 14.0, *) {
-                    webView.callAsyncJavaScript(js, arguments: [:], in: nil, in: .page
-                    ) { result in
-                        switch(result) {
-                        case .success(let results):
-                            continuation.resume()
-                            print("executeAsyncJavaScript")
-                            print(results)
-                            break
-                        case .failure(let error):
-                            print("executeAsyncJavaScript")
-                            print(error)
-                        }
-                        
-                    }
-                } else {
-                    webView.evaluateJavaScript("(async function() {\(js)})()") { result, error in
-                        if let error = error {
-                            print("Error: \(error)")
-                            continuation.resume()
-                        } else {
-                            print("Result: \(String(describing: result))")
-                            continuation.resume()
-                        }
-                    }
-                }
-            }
-            
         }
     }
 }

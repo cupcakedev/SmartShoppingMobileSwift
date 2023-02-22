@@ -8,19 +8,19 @@
 import Foundation
 
 extension Engine {
-    
-    public func urlChangeHandler(nUrl: String) {
-        print(nUrl);
-    }
-    
+    /**
+     Handles the received message and calls the appropriate delegate method based on the type of message.
+
+     - Parameter nMessage: The received message to be handled.
+     */
     public func messageHandler(nMessage: Message) {
         switch nMessage {
         case .configMessage(let config):
             defaultConfigInit(configId: config)
         case .checkMessage(_):
-            print("checkMessage")
+            break
         case .initMessage(_):
-            print("initMessage")
+            break
         case .persistMessage(let persistMessage):
             persistState(state: persistMessage.persistedState)
         case .clearPersistMessage(_):
@@ -43,19 +43,37 @@ extension Engine {
             delegate?.didReceiveCurrentCode(currentCode: eventMessage.message)
         case .bestCode(let eventMessage):
             delegate?.didReceiveBestCode(bestCode: eventMessage.message)
+        case .logMessage(let eventMessage):
+            if (Constants.isLoggerEnable) {
+                Task {
+                    await self.log(event: eventMessage.event)
+                }
+            }
         }
         
     }
     
+    /**
+     Persists the given engine state to the persistent storage.
+
+     - Parameter state: The engine state to be persisted.
+     */
     func persistState(state: EnginePersistedState) {
         storage.persisted = state
     }
     
+    /**
+     Clears the persisted engine state from the persistent storage.
+     */
     func clearPersistState() {
         storage.persisted = nil
-        print("clearPersistState")
     }
     
+    /**
+     Initializes the engine with the default configuration for the given `configId`.
+
+     - Parameter configId: The ID of the configuration to be used for initialization.
+     */
     func defaultConfigInit(configId: String) {
         let config = self.storage.defaultConfigs.first(where: { (config: EngineConfig) -> Bool in
             return config.shopId == configId
