@@ -22,6 +22,7 @@ public enum Message: Codable {
     case progressMessage (EventMessage<ProgressMessage>)
     case currentCode (EventMessage<CurrentCode>)
     case bestCode (EventMessage<BestCode>)
+    case logMessage (LogMessage)
     
     
     public func encode(to encoder: Encoder) throws {
@@ -41,6 +42,7 @@ public enum Message: Codable {
         case .progressMessage(let v): try container.encode(v)
         case .currentCode(let v): try container.encode(v)
         case .bestCode(let v): try container.encode(v)
+        case .logMessage(let v): try container.encode(v)
         }
     }
     
@@ -96,7 +98,11 @@ public enum Message: Codable {
             return
         } else if (try? value.decode(EventMessage<BestCode>.self))?.event == "bestCode" {
             let v = try! value.decode(EventMessage<BestCode>.self)
-            self = .currentCode(v)
+            self = .bestCode(v)
+            return
+        } else if (try? value.decode(LogMessage.self))?.type == "smartshopping_log" {
+            let v = try! value.decode(LogMessage.self)
+            self = .logMessage(v)
             return
         }
         
@@ -167,3 +173,24 @@ public struct ProgressMessage: Codable {
     public let value: ProgressStatus
     public let state: EngineState
 }
+
+public struct LogMessage: Codable {
+    public let type: String
+    public let event: LogEvent
+}
+
+public struct LogEvent: Codable {
+    public let type: String
+    public let shop: String
+    public let total: String?
+    public let code: String?
+    public let valid: Bool?
+    public let message: String?
+    public let discount: String?
+    public let codes: String?
+    public let layoutPage: String?
+    
+}
+
+
+
