@@ -15,9 +15,18 @@ Here are the steps to install the local `SmartShoppingPackage` in your Xcode pro
 
 1. Open your Xcode project.
 2. In the Project navigator, right-click on the project or target where you want to use the `SmartShoppingPackage`.
-3. Choose `Add Packages...` from the context menu.
-4. In the dialog, select `Add Local...`.
-5. Select package folder and click the `Add Package` button
+3. Choose "Add Packages..." from the context menu.
+4. If you want to add a package from a repository:
+    1. Paste "https://github.com/cupcakedev/SmartShoppingMobileSwift" into the text box in the opened dialog
+    2. Click the "Add Package" button
+    3. In the "Add Package" dialog, make sure the `SmartShoppingPackage` is selected, and click "Add Package".
+5. If you want to add the library locally:
+    1. Click the "Add local" button
+    2. Select package folder and click the "Add Package" button
+    3. Go to the project settings and find the "Frameworks, Libraries, and Embadded Content" section.
+    4. Click on the plus button
+    5. Choose SmartShoppingPackage and click "Add" button
+
 
 Now you can import the `SmartShoppingPackage` in your Swift code using:
 ```swift
